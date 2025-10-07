@@ -1,0 +1,28 @@
+services:
+  mysql_prod:
+    image: mysql:8.0
+    container_name: mysql_prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init-prod:/docker-entrypoint-initdb.d
+      - prod_data:/var/lib/mysql
+
+  mysql_dev:
+    image: mysql:8.0
+    container_name: mysql_dev
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"        # host 3307 → container 3306
+    volumes:
+      - ./init-dev:/docker-entrypoint-initdb.d
+      - dev_data:/var/lib/mysql
+
+volumes:
+  prod_data:
+  dev_data:
