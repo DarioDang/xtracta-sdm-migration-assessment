@@ -7,7 +7,9 @@
 - Operating System: MacOS 
 
 ## 2. How the SDM Tool Works 
- [Need to be done] 
+The SDM (Schema Data Migration) tool help us to manage and version control data in MySQL databases, which include not only change in schema structure but also in the data itself. For example, from my experience when ruuning the `sdm init` , the SDM tool will extract the current structure of the original databased (e.g: prod) and it creates the sample schema. Then I can edit the `.sql` file to change the structure such as adding address column, and then use the `sdm make - schema` to create the migration plan of that change. Not stopping at this point, SDM also support us to  migration data such as insert, update or delete. 
+
+And the last but not least which is also an interesting point if this tool as everytime we run the migration, the tool will apply the changes to the dev environment and record the entire migration history that we can manage, rollback and extract (e.g: _migration_history, _migration_history_log). These act as a version control just like git that help us to fully manage the change between current and the past. Thanks to this feature, we can easily track and rollback to previous verions if necessary, especially when dealing with complex database changes across different environments such as development, testing, and production.
 
 ## 3. Challenge Encountered and How I Solved It
 
