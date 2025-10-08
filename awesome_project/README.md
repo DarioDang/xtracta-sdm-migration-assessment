@@ -1,7 +1,7 @@
 # Xtracta SDM Migration Assessment
 
 ## 1. Evironement Details 
-- MySQL Version: 8.0 (proposed by Docker container from mysql:8.0 image)
+- MySQL Version: 8.0 (running in a Docker container using the mysql:8.0 image)
 - SDM Version: 0.6.4
 - Python Version: 3.11.1 (virtual environment created with `pyenv`)
 - Operating System: MacOS 
