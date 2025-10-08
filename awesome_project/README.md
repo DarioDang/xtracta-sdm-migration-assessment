@@ -1,90 +1,37 @@
 # Xtracta SDM Migration Assessment
-```bash
-source ~/.zshrc
-pyenv activate py311-sdm
-```
 
-## CHALLENGES 
-### 1. `zsh: command not found: sdm`
+## 1. Evironement Details 
+- MySQL Version: 8.0 (proposed by Docker container from mysql:8.0 image)
+- SDM Version: 0.6.4
+- Python Version: 3.11.1 (virtual environment created with `pyenv`)
+- Operating System: MacOS 
 
-####  Description: 
-When following the document running the initialization command: `MYSQL_PWD='root' sdm init --host 127.0.0.1 --port 3306 -u root --schema awesome_db` the terminal return `zsh: command not found: sdm`.
+## 2. How the SDM Tool Works 
+- Overview of what SDM does
+- How schema migrations are handled
+- How data migrations are handled
+- How rollback works
+- Why this approach is useful for database version control
 
-This indicated that the sdm (Schema Data Migration) command-line tool was not installed or not available in the system PATH, so my MacBook shell (zsh) couldn’t find it.
+## 3. Challenge Encountered and How I Solved It
 
-#### Investigation
-1. I confirmed by ruuning `which sdm` in terminal to check whether if I have this installed. Hence, there is no output 
-
-2. I re - read the document and noted that it can be used either via `docker image` or install locally using Python >= 3.8 confirmed in python_requires in `setup.cfg`
-
-#### Solved 
-To resolve the  issue, I decided to install the Schema Data Migration (SDM) tool locally instead of running it through Docker
-
-1. First I clone the sdm repo `git clone https://github.com/Beim/schema-data-migration.git`
-
-2. Then inside the `schema-data-migration` folder running `pip3 install .` 
-
-### 2. `mysqlclient build failed during SDM installation`
-####  Description: 
-When installing SDM locally with `pip3 install .` inside the cloned `schema-data-migration` folder, the installation failed with error:  
-
-```bash 
-error: subprocess-exited-with-error
-Exception: Can not find valid pkg-config name.
-Specify MYSQLCLIENT_CFLAGS and MYSQLCLIENT_LDFLAGS env vars manually
-```
-#### Investigation
-1. I recognized that mysqlclient is a Python wrapper for MySQL’s client library, so it needs MySQL development headers to compile.
-2. The message `Can not find valid pkg-config name` suggested that macOS couldn’t find the required MySQL or MariaDB client libraries.
-3. I confirmed by running `pkg-config --exists mysqlclient` which returned error, therefore, confirming missing MySQL dev tools.
-
-#### Solved
-To fix it, I installed MySQL client library. Since the package is keg-only on macOS, I exported the library and include paths manually:
-
-```bash 
-export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/mysql-client/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/mysql-client/include"
-export PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig"
-```
-
-After include paths manually, I re-run `pip3 install .` then the `sdm` was succesfully installed. In overall, The error occurred because the MySQL development headers were not available for the mysqlclient package to compile. By installing and linking the Homebrew MySQL client, I resolved the missing library paths.
-
-### 3. `ImportError: cannot import name 'StrEnum' from 'enum'`
-####  Description: 
+#### Description
 When I ran the SDM initilization command: `MYSQL_PWD='<my-password>' sdm init --host 127.0.0.1 --port 3306 -u root --schema awesome_db` , the process failed with this error message: `ImportError: cannot import name 'StrEnum' from 'enum'`
 
 #### Investigation
-1. The traceback pointed to SDM’s internal code: `from enum import StrEnum` and my python was `3.10.18`. 
-2. I check the python document `StrEnum` library[https://pypi.org/project/StrEnum/] and stackoverflow[https://stackoverflow.com/questions/75040733/is-there-a-way-to-use-strenum-in-earlier-python-versions], the class StrEnum was introduced in Python 3.11, not available in Python 3.10 or earlier.
-3. This confirmed that the installed SDM version was using a feature only supported in Python 3.11+ . 
+- The traceback pointed to SDM’s internal code: `from enum import StrEnum` and my python was `3.10.18`. 
+- I check the python document [`StrEnum`](https://pypi.org/project/StrEnum/) library and [stackoverflow](https://stackoverflow.com/questions/75040733/is-there-a-way-to-use-strenum-in-earlier-python-versions) discussion, I figured out that the class `StrEnum` was introduced in `Python 3.11``, not available in `Python 3.10` or earlier.
+- This confirmed that the installed SDM version was using a feature only supported in Python 3.11+ .
 
 #### Solved
-I resolved this issue by upgrading my virtual environment to `Python 3.11.1`, which includes the StrEnum class used by SDM.
-
-### 4. `[Errno 2] No such file or directory: 'skeema'`
-#### Description: 
-When running `sdm init`, the process failed because the Skeema binrary was missing from the system. 
-
-#### Investigate:
-1. The SDM log showed: 
-
-```
-Run skeema init ...
-[ERROR] [Errno 2] No such file or directory: 'skeema'
-```
-
-This shown that SDM relies on the external tool call `Skeema` but it was not installed. 
-
-#### Solved
-To solved this error, I installed the `Skeema` library inter terminal by"
-
-```bash
-brew install skeema
-```
-After installed sucessfully, I re-run the `init` this create the following files exactly the same with document.
+To resolve the issue, I upgraded my environment to `Python 3.11.1` using `pyenv` then reinstalled SDM locally, and successfully reran the initialization command. This experience helped me understand the importance of verifying library compatibility with specific Python versions before setup. 
 
 
-
-
-
+## 4. Project Workflow Summary
+- Step 1: Initialize project
+- Step 2: Add environment
+- Step 3: Migrate schema
+- Step 4: Make schema migration plan
+- Step 5: Make data migration plan
+- Step 6: Rollback
+- Step 7: Export migration history
