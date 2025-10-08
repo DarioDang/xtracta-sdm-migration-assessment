@@ -13,3 +13,6 @@ data/*.js.map
 # Temporary files
 tmp/
 *.log
+
+# macOS system files
+.DS_Store
